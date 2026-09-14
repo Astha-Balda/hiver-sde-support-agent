@@ -1,2 +1,20 @@
-data/
-data/
+# Virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Raw dataset
+data/raw/twcs.csv
+
+# Generated processed data
+data/processed/*.jsonl
+data/processed/*.csv
+
+# Generated results
+results/
