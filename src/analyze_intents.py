@@ -6,7 +6,7 @@ from collections import Counter
 # 1. Load reconstructed conversations
 # --------------------------------------------------
 
-input_file = "data/processed/amazonhelp_conversations.jsonl"
+input_file = "data/processed/amazonhelp_cleaned.jsonl"
 
 print("Loading conversations...")
 

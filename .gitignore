@@ -18,3 +18,6 @@ data/processed/*.csv
 
 # Generated results
 results/
+
+data/processed/*.index
+data/processed/*metadata.json
