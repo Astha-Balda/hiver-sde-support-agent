@@ -8,6 +8,8 @@ __pycache__/
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # Raw dataset
 data/raw/twcs.csv
@@ -15,9 +17,27 @@ data/raw/twcs.csv
 # Generated processed data
 data/processed/*.jsonl
 data/processed/*.csv
+data/processed/*.index
+data/processed/*metadata.json
 
 # Generated results
 results/
 
-data/processed/*.index
-data/processed/*metadata.json
+# Frontend dependencies/build
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# Frontend environment files
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
