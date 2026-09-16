@@ -1,5 +1,4 @@
-# hiver-sde-support-agent
-# AI Customer Support Agent
+# ResolveAI: AI Customer Support Agent
 
 An AI-powered customer support system that uses semantic search and Retrieval-Augmented Generation (RAG) to retrieve relevant historical support cases and generate context-aware responses to customer queries.
 
@@ -61,29 +60,31 @@ Grounded Support Response
 
 
 ✨ Features
-Data Processing
+Data Processing:
 Processes customer-support conversations from the TWCS dataset
 Filters conversations based on English-language content
 Cleans URLs, mentions, signatures, and unnecessary whitespace
 Converts conversations into customer-query and agent-response pairs
 Performs basic intent and issue analysis
 Validates generated support pairs
-Semantic Search
+
+Semantic Search:
 Generates sentence embeddings using all-MiniLM-L6-v2
 Creates 384-dimensional embeddings
 Uses FAISS for efficient similarity search
 Retrieves the most relevant historical support cases
 Uses cosine-style similarity through normalized embeddings
-Confidence Handling
+
+Confidence Handling:
 Applies a similarity threshold to retrieved results
 Accepts sufficiently relevant historical cases
 Detects low-confidence queries
 Provides a fallback path for clarification or escalation
-RAG-based Response Generation
 
+RAG-based Response Generation:
 The planned RAG layer will use retrieved historical support cases as context for an LLM, reducing the likelihood of generating unsupported responses.
 
-API and User Interface
+API and User Interface:
 
 The planned application will provide:
 
