@@ -1,137 +1,203 @@
-# ResolveAI: AI Customer Support Agent
+# ResolveAI 🤖
 
-An AI-powered customer support system that uses semantic search and Retrieval-Augmented Generation (RAG) to retrieve relevant historical support cases and generate context-aware responses to customer queries.
+**AI-Powered Customer Support Agent using RAG**
 
-The project is designed to demonstrate an end-to-end AI support workflow including data preprocessing, semantic retrieval, confidence-based handling, and eventually LLM-powered response generation.
+ResolveAI is an AI-powered customer support application that uses **Retrieval-Augmented Generation (RAG)** to provide relevant and natural responses to customer queries.
+
+The system retrieves similar historical customer-support conversations using **FAISS** and **Sentence Transformers**, then provides the retrieved context to a **Groq-hosted LLM** to generate a concise support response.
 
 ---
 
-## 🚀 Project Overview
+## 🚀 Features
 
-Customer support teams handle a large number of repetitive queries related to orders, deliveries, payments, refunds, returns, accounts, and other issues.
-
-This project uses historical customer-support conversations to build an intelligent support agent that can:
-
-- Understand the meaning of a customer's query
-- Retrieve similar historical support cases
-- Use relevant support information as context
-- Generate a grounded response using an LLM
-- Detect low-confidence retrievals
-- Escalate queries when relevant information cannot be found
+* 💬 AI-powered customer support chat
+* 🔎 Semantic search using FAISS
+* 🧠 Sentence Transformer embeddings
+* 📚 Retrieval-Augmented Generation (RAG)
+* ⚡ Groq-powered response generation
+* 🎯 Similarity-based confidence threshold
+* ❓ Multi-question query handling
+* 🛡️ Low-confidence fallback responses
+* 🔐 Environment-variable based API key management
+* 🌐 React-based responsive frontend
+* 🔗 FastAPI backend
+* 📡 REST API communication between frontend and backend
 
 ---
 
 ## 🏗️ System Architecture
 
+```text
+┌──────────────────────┐
+│    React Frontend    │
+│      ResolveAI       │
+└──────────┬───────────┘
+           │
+           │ HTTP Request
+           ▼
+┌──────────────────────┐
+│    FastAPI Backend   │
+│      /support        │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    Support Agent     │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│  Sentence Transformer│
+│  Query Embedding     │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│       FAISS          │
+│ Semantic Retrieval   │
+└──────────┬───────────┘
+           │
+           │ Relevant
+           │ Support Cases
+           ▼
+┌──────────────────────┐
+│     Groq LLM         │
+│ Response Generation  │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    AI Response       │
+│    React Frontend    │
+└──────────────────────┘
+```
 
-Customer Query
-      │
-      ▼
-Text Processing
-      │
-      ▼
-Sentence Transformer
-      │
-      ▼
-Query Embedding
-      │
-      ▼
-FAISS Vector Search
-      │
-      ▼
-Relevant Historical Support Cases
-      │
-      ▼
-Similarity / Confidence Check
-      │
-      ├─────────────── Low Confidence
-      │                      │
-      │                      ▼
-      │                 Ask / Escalate
-      │
-      ▼
-Retrieved Context
-      │
-      ▼
-RAG + LLM
-      │
-      ▼
-Grounded Support Response
+---
 
+## 🧠 How It Works
 
-✨ Features
-Data Processing:
-Processes customer-support conversations from the TWCS dataset
-Filters conversations based on English-language content
-Cleans URLs, mentions, signatures, and unnecessary whitespace
-Converts conversations into customer-query and agent-response pairs
-Performs basic intent and issue analysis
-Validates generated support pairs
+### 1. User Query
 
-Semantic Search:
-Generates sentence embeddings using all-MiniLM-L6-v2
-Creates 384-dimensional embeddings
-Uses FAISS for efficient similarity search
-Retrieves the most relevant historical support cases
-Uses cosine-style similarity through normalized embeddings
+The customer enters a support question through the ResolveAI chat interface.
 
-Confidence Handling:
-Applies a similarity threshold to retrieved results
-Accepts sufficiently relevant historical cases
-Detects low-confidence queries
-Provides a fallback path for clarification or escalation
+Example:
 
-RAG-based Response Generation:
-The planned RAG layer will use retrieved historical support cases as context for an LLM, reducing the likelihood of generating unsupported responses.
+```text
+My payment failed. What should I do?
+```
 
-API and User Interface:
+### 2. Query Embedding
 
-The planned application will provide:
+The query is converted into a numerical vector using the **Sentence Transformer `all-MiniLM-L6-v2`** model.
 
-FastAPI backend
-REST APIs for customer queries
-React.js frontend
-Real-time support interaction
-Confidence-based fallback and escalation
-📊 Dataset
+### 3. Semantic Retrieval
 
-This project uses the Twitter Customer Support (TWCS) dataset containing customer-service conversations between users and support accounts.
+The generated embedding is searched against the FAISS vector index.
 
-For the current processing pipeline:
+The system retrieves the most similar historical customer-support cases.
 
-Original conversations processed: 82,556
-English conversations retained: 60,531
-Customer messages extracted: 93,547
-Customer-agent support pairs created: 93,544
-Embedding dimension: 384
+### 4. Confidence Check
 
-The raw dataset is intentionally excluded from the repository because of its size and dataset distribution considerations.
+The best similarity score is compared against a predefined threshold:
 
-🛠️ Tech Stack
-Programming Language
-Python
-Machine Learning / NLP
-Sentence Transformers
-Hugging Face Transformers
-Natural Language Processing
-Text Embeddings
-Vector Search
-FAISS
-Backend
-FastAPI
-REST APIs
-Frontend
-React.js
-AI Architecture
-Retrieval-Augmented Generation (RAG)
-Large Language Models (LLMs)
-Semantic Search
-Development Tools
-Git
-GitHub
-VS Code
+```text
+Similarity Threshold = 0.75
+```
 
-📁 Project Structure
+If the similarity score is below the threshold, the system does not generate an unsupported answer and instead returns a fallback response.
+
+### 5. Context Construction
+
+For relevant queries, the retrieved customer-support examples are provided as context to the LLM.
+
+### 6. Response Generation
+
+The Groq-hosted LLM generates a concise and natural response based on the retrieved support information.
+
+### 7. Response to User
+
+The generated response is returned through the FastAPI API and displayed in the React frontend.
+
+---
+
+## ❓ Multi-Question Handling
+
+ResolveAI can handle multiple questions in a single customer message.
+
+Example:
+
+```text
+My payment failed? Where is my refund? My package says delivered but I didn't receive it?
+```
+
+The system:
+
+1. Splits the message into individual questions.
+2. Performs retrieval separately for each question.
+3. Filters irrelevant questions using the similarity threshold.
+4. Combines the relevant retrieved context.
+5. Uses a single LLM call to generate the responses.
+6. Returns the answers in the same order.
+
+This reduces unnecessary LLM calls compared with generating a separate response for every question.
+
+---
+
+## 🛡️ Hallucination Control
+
+ResolveAI uses several safeguards to reduce unsupported responses:
+
+* Retrieves historical support information before generation.
+* Uses a similarity threshold of `0.75`.
+* Rejects low-confidence queries.
+* Instructs the LLM to answer only using retrieved information.
+* Prevents the model from inventing account details, order information, refunds, dates, or policies.
+* Uses fallback responses when relevant information cannot be found.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* React.js
+* JavaScript
+* HTML
+* CSS
+
+### Backend
+
+* Python
+* FastAPI
+* Pydantic
+
+### AI / Machine Learning
+
+* Sentence Transformers
+* `all-MiniLM-L6-v2`
+* FAISS
+* Retrieval-Augmented Generation (RAG)
+* Groq API
+* `openai/gpt-oss-20b`
+
+### Data
+
+* Customer support conversation dataset
+* JSONL processed support pairs
+* FAISS vector index
+
+### Development Tools
+
+* Git
+* GitHub
+* VS Code
+* Postman
+
+---
+
+## 📂 Project Structure
+
+```text
 hiver-sde-support-agent/
 │
 ├── data/
@@ -139,27 +205,263 @@ hiver-sde-support-agent/
 │   │   └── twcs.csv
 │   │
 │   └── processed/
-│       ├── amazonhelp_english_conversations.jsonl
-│       ├── amazonhelp_cleaned.jsonl
-│       ├── amazonhelp_support_pairs.jsonl
 │       ├── support_pairs.index
 │       └── support_pairs_metadata.json
 │
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── ...
+│
 ├── src/
-│   ├── filter_english.py
-│   ├── clean_conversations.py
-│   ├── create_support_pairs.py
-│   ├── analyze_intents.py
-│   ├── validate_support_pairs.py
-│   ├── build_vector_index.py
-│   └── search_support.py
+│   ├── api.py
+│   ├── support_agent.py
+│   ├── retriever.py
+│   └── ...
 │
 ├── .gitignore
 ├── requirements.txt
-└── README.md
+├── README.md
+└── ...
+```
 
-👩‍💻 Author
+> **Note:** The raw dataset, processed datasets, FAISS index files, environment files, and other generated files should not be committed if they are included in `.gitignore`.
 
-Astha Balda
+---
 
-Computer Science Engineering Student
+## ⚙️ Local Setup
+
+### Prerequisites
+
+Make sure you have installed:
+
+* Python 3.10+
+* Node.js
+* npm
+* Git
+
+---
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Astha-Balda/hiver-sde-support-agent.git
+cd hiver-sde-support-agent
+```
+
+---
+
+### 2. Create and Activate Virtual Environment
+
+#### Windows
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+#### macOS / Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+### 3. Install Backend Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+If Groq is not already included in `requirements.txt`:
+
+```bash
+pip install groq
+```
+
+---
+
+### 4. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+```
+
+Never commit the `.env` file to GitHub.
+
+---
+
+### 5. Start the Backend
+
+From the project root:
+
+```bash
+uvicorn src.api:app --reload
+```
+
+The backend will run at:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+### 6. Start the Frontend
+
+Open another terminal:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will normally be available at:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## 🔌 API
+
+### Health Check
+
+```http
+GET /
+```
+
+Example response:
+
+```json
+{
+  "message": "Hiver SDE Support Agent API is running"
+}
+```
+
+### Generate Support Response
+
+```http
+POST /support
+```
+
+Request:
+
+```json
+{
+  "query": "My payment failed"
+}
+```
+
+Response:
+
+```json
+{
+  "query": "My payment failed",
+  "confidence": "HIGH",
+  "similarity": 0.84,
+  "retrieved_cases": 3,
+  "response": "I'm sorry to hear your payment failed. Please share any error message you received so we can better understand the issue and assist you."
+}
+```
+
+---
+
+## 📊 Retrieval & Confidence
+
+ResolveAI uses cosine similarity between the query embedding and stored support-case embeddings.
+
+The current confidence rule is:
+
+```text
+Similarity >= 0.75  → HIGH confidence
+Similarity < 0.75   → LOW confidence
+```
+
+Low-confidence queries receive a fallback response instead of being passed to the LLM.
+
+---
+
+## 🔐 Security
+
+* API keys are stored using environment variables.
+* `.env` files are excluded from Git.
+* Large raw datasets are excluded from the repository.
+* Generated processed files and vector indexes can be regenerated locally.
+
+---
+
+## 🎯 Use Cases
+
+ResolveAI can be used for:
+
+* E-commerce customer support
+* Order and delivery queries
+* Payment-related support
+* Refund-related queries
+* Return and cancellation queries
+* Customer-service automation
+* FAQ assistance
+* Support ticket response generation
+
+---
+
+## 🔮 Future Improvements
+
+Potential improvements include:
+
+* Better handling of noisy or typo-filled queries
+* More advanced query splitting
+* Conversation memory
+* Streaming AI responses
+* Authentication and user accounts
+* Support ticket creation
+* Improved retrieval and reranking
+* Evaluation metrics for retrieval and response quality
+* Production monitoring and logging
+* Cloud deployment
+
+---
+
+## 📌 Project Status
+
+**Status: Completed**
+
+The application currently supports:
+
+* React frontend
+* FastAPI backend
+* FAISS semantic retrieval
+* RAG-based response generation
+* Groq LLM integration
+* Confidence-based fallback
+* Multi-question handling
+* End-to-end frontend/backend integration
+
+**Deployment is the remaining step.**
+
+---
+
+## 👩‍💻 Author
+
+**Astha Balda**
+
+B.E. Computer Science & Engineering
+Chitkara University
+
+---
+
+## ⭐ Acknowledgements
+
+* FAISS for efficient vector similarity search
+* Sentence Transformers for text embeddings
+* Groq for LLM inference
+* FastAPI for backend API development
+* React for the frontend application
