@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from src.support_agent import SupportAgent
+from src.support_agent import SIMILARITY_THRESHOLD, SupportAgent
 
 
 app = FastAPI(
@@ -64,7 +64,7 @@ def support(request: SupportRequest):
 
     confidence = (
         "HIGH"
-        if best_score >= 0.75
+        if best_score >= SIMILARITY_THRESHOLD
         else "LOW"
     )
 

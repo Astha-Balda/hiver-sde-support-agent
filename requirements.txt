@@ -1,3 +1,7 @@
+fastapi
+uvicorn
+python-dotenv
+google-genai
 langdetect
 pandas
 sentence-transformers
