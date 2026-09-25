@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "/api"
+).replace(/\/$/, "");
+
 function App() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -56,7 +60,7 @@ function App() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/support",
+        `${API_BASE_URL}/support`,
         {
           method: "POST",
           headers: {

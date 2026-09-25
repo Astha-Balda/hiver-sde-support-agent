@@ -1,2 +1,19 @@
+[project]
+name = "hiver-sde-support-agent"
+version = "0.1.0"
+description = "RAG-based AI customer support API"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "faiss-cpu",
+    "fastapi",
+    "google-genai",
+    "langdetect",
+    "numpy",
+    "pandas",
+    "python-dotenv",
+    "sentence-transformers",
+    "uvicorn",
+]
+
 [tool.vercel]
 entrypoint = "src.api:app"
