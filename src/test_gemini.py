@@ -1,19 +1,29 @@
 import os
+
 from dotenv import load_dotenv
 from google import genai
 
-load_dotenv()
 
-api_key = os.getenv("GEMINI_API_KEY")
+def main():
+    load_dotenv()
 
-if not api_key:
-    raise ValueError("GEMINI_API_KEY not found")
+    api_key = os.getenv("GEMINI_API_KEY")
 
-client = genai.Client(api_key=api_key)
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY not found")
 
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents="Reply to this customer support query in a helpful and concise way: My order has not arrived yet."
-)
+    client = genai.Client(api_key=api_key)
 
-print(response.text)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=(
+            "Reply to this customer support query in a helpful and concise way: "
+            "My order has not arrived yet."
+        ),
+    )
+
+    print(response.text)
+
+
+if __name__ == "__main__":
+    main()

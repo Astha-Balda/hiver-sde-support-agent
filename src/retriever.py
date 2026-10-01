@@ -1,19 +1,37 @@
 import json
+import os
+from pathlib import Path
 
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
 
-INDEX_FILE = "data/processed/support_pairs.index"
-METADATA_FILE = "data/processed/support_pairs_metadata.json"
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+
+def resolve_project_path(path):
+    resolved_path = Path(path)
+
+    if resolved_path.is_absolute():
+        return resolved_path
+
+    return BASE_DIR / resolved_path
+
+
+INDEX_FILE = resolve_project_path(
+    os.getenv("SUPPORT_INDEX_FILE", "data/processed/support_pairs.index")
+)
+METADATA_FILE = resolve_project_path(
+    os.getenv("SUPPORT_METADATA_FILE", "data/processed/support_pairs_metadata.json")
+)
 
 
 class SupportRetriever:
 
     def __init__(self):
         print("Loading FAISS index...")
-        self.index = faiss.read_index(INDEX_FILE)
+        self.index = faiss.read_index(str(INDEX_FILE))
 
         print("Loading metadata...")
         with open(METADATA_FILE, "r", encoding="utf-8") as file:
