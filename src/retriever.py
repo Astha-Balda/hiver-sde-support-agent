@@ -1,44 +1,53 @@
 import json
 import os
-from pathlib import Path
 
 import faiss
 import numpy as np
+from huggingface_hub import hf_hub_download
 from sentence_transformers import SentenceTransformer
 
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-
-
-def resolve_project_path(path):
-    resolved_path = Path(path)
-
-    if resolved_path.is_absolute():
-        return resolved_path
-
-    return BASE_DIR / resolved_path
-
-
-INDEX_FILE = resolve_project_path(
-    os.getenv("SUPPORT_INDEX_FILE", "data/processed/support_pairs.index")
+HF_DATASET_REPO = os.getenv(
+    "HF_DATASET_REPO",
+    "YOUR_USERNAME/resolveai-rag-data"
 )
-METADATA_FILE = resolve_project_path(
-    os.getenv("SUPPORT_METADATA_FILE", "data/processed/support_pairs_metadata.json")
-)
+
+HF_TOKEN = os.getenv("HF_TOKEN")
 
 
 class SupportRetriever:
 
     def __init__(self):
+
+        print("Downloading FAISS index...")
+
+        index_path = hf_hub_download(
+            repo_id=HF_DATASET_REPO,
+            filename="support_pairs.index",
+            repo_type="dataset",
+            token=HF_TOKEN,
+        )
+
+        print("Downloading metadata...")
+
+        metadata_path = hf_hub_download(
+            repo_id=HF_DATASET_REPO,
+            filename="support_pairs_metadata.json",
+            repo_type="dataset",
+            token=HF_TOKEN,
+        )
+
         print("Loading FAISS index...")
-        self.index = faiss.read_index(str(INDEX_FILE))
+        self.index = faiss.read_index(index_path)
 
         print("Loading metadata...")
-        with open(METADATA_FILE, "r", encoding="utf-8") as file:
+        with open(metadata_path, "r", encoding="utf-8") as file:
             self.metadata = json.load(file)
 
         print("Loading embedding model...")
-        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+        self.model = SentenceTransformer(
+            "sentence-transformers/all-MiniLM-L6-v2"
+        )
 
         print("Retriever ready.")
 

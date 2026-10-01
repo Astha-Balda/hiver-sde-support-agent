@@ -6,3 +6,4 @@ langdetect
 pandas
 sentence-transformers
 faiss-cpu
+huggingface_hub
