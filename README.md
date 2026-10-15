@@ -4,7 +4,7 @@
 
 ResolveAI is an AI-powered customer support application that uses **Retrieval-Augmented Generation (RAG)** to provide relevant and natural responses to customer queries.
 
-The system retrieves similar historical customer-support conversations using **FAISS** and **Sentence Transformers**, then provides the retrieved context to a **Groq-hosted LLM** to generate a concise support response.
+The system retrieves similar historical customer-support conversations using **FAISS** and a lightweight **ONNX MiniLM encoder**, then provides the retrieved context to **Gemini** to generate a concise support response.
 
 ---
 
@@ -276,10 +276,10 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-If Groq is not already included in `requirements.txt`:
+To run the offline dataset-preparation and index-building scripts as well:
 
 ```bash
-pip install groq
+pip install -r requirements-data.txt
 ```
 
 ---
@@ -289,7 +289,8 @@ pip install groq
 Create a `.env` file in the project root:
 
 ```env
-GROQ_API_KEY=your_groq_api_key
+GEMINI_API_KEY=your_gemini_api_key
+HF_DATASET_REPO=asthabalda/resolveai-rag-data
 ```
 
 Never commit the `.env` file to GitHub.
@@ -301,6 +302,7 @@ Never commit the `.env` file to GitHub.
 From the project root:
 
 ```bash
+python -m src.prepare_assets
 uvicorn src.api:app --reload
 ```
 
@@ -330,7 +332,63 @@ http://localhost:5173
 
 ---
 
-## 🔌 API
+## Free deployment on Render and Vercel
+
+The API uses a quantized ONNX version of `all-MiniLM-L6-v2`, attention-masked
+mean pooling, and normalized 384-dimensional embeddings with the existing
+FAISS index. Small score differences from quantization are expected. Metadata
+is streamed into a local SQLite database so only retrieved cases enter RAM.
+Model initialization and searches are serialized to avoid concurrent memory spikes.
+
+On Render, use the repository root and configure:
+
+```text
+Build Command: pip install -r requirements.txt && python -m src.prepare_assets
+Start Command: uvicorn src.api:app --host 0.0.0.0 --port $PORT --workers 1
+Health Check Path: /
+```
+
+Remove any previous build command that installs `torch`. The lightweight runtime
+requirements do not include PyTorch, Transformers, pandas, or CUDA packages.
+The `.python-version` file selects Python 3.12.14; remove an old `PYTHON_VERSION`
+environment override or set it to the same version.
+
+Set these environment variables on Render:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+HF_DATASET_REPO=asthabalda/resolveai-rag-data
+ALLOWED_ORIGINS=https://resolve-ai-psi-tan.vercel.app
+```
+
+Add a read-only `HF_TOKEN` only for a private dataset. Keep the asset cache inside
+the project (the default `.cache/huggingface` directory), so files downloaded
+during the build are part of the deployed application. Do not set
+`SUPPORT_CACHE_DIR` to a temporary directory on Render. The build prefetch is
+required: downloading the full dataset during a chat request can itself exceed
+the free runtime's memory budget. Runtime loading is cache-only; missing files
+produce a readiness error instead of starting a large download.
+
+Push the changes, then choose **Clear build cache & deploy** on Render to discard
+the old PyTorch installation. Keep one worker. After deployment, test an actual
+`POST /support` and check Render's memory metrics; a successful health check alone
+does not verify retrieval. Requests accept 1–2,000 characters.
+
+On Vercel, keep Root Directory `frontend`, the Vite preset, and:
+
+```env
+VITE_API_BASE_URL=https://hiver-sde-support-agent.onrender.com
+```
+
+For local use, run `python -m src.prepare_assets` before starting Uvicorn. To run
+the offline dataset-preparation/index-building scripts, additionally install
+`pip install -r requirements-data.txt`; those heavier dependencies are not needed
+on Render. Run the regression tests with `python -m unittest discover -s tests -v`
+after installing `httpx` for FastAPI's test client.
+
+---
+
+## API endpoints
 
 ### Health Check
 

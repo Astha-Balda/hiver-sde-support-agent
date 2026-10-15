@@ -1,0 +1,5 @@
+# Only needed for offline dataset preparation and index building.
+-r requirements.txt
+langdetect
+pandas
+sentence-transformers

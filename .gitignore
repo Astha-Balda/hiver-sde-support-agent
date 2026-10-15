@@ -19,6 +19,8 @@ data/processed/*.jsonl
 data/processed/*.csv
 data/processed/*.index
 data/processed/*metadata.json
+data/processed/*.sqlite3
+.cache/
 
 # Generated results
 results/

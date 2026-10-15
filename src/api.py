@@ -1,9 +1,10 @@
 import os
+import threading
 from functools import lru_cache
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.support_agent import SIMILARITY_THRESHOLD, SupportAgent
 
@@ -41,12 +42,21 @@ app.add_middleware(
 
 
 class SupportRequest(BaseModel):
-    query: str
+    query: str = Field(min_length=1, max_length=2000)
 
 
 @lru_cache(maxsize=1)
-def get_agent():
+def _load_agent():
     return SupportAgent()
+
+
+_agent_lock = threading.Lock()
+
+
+def get_agent():
+    # lru_cache alone can initialize several agents during concurrent cache misses.
+    with _agent_lock:
+        return _load_agent()
 
 
 @app.get("/")

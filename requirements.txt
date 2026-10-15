@@ -2,8 +2,9 @@ fastapi
 uvicorn
 python-dotenv
 google-genai
-langdetect
-pandas
-sentence-transformers
 faiss-cpu
 huggingface_hub
+numpy
+onnxruntime
+tokenizers
+ijson
