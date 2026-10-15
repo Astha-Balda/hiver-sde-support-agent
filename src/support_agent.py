@@ -3,6 +3,7 @@ import re
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 from src.retriever import SupportRetriever
 
@@ -112,7 +113,7 @@ Final support response:
                 "Follow the user's instructions and use only "
                 "the provided support examples."
             ),
-            max_completion_tokens=300,
+            max_completion_tokens=512,
             fallback_response=self._retrieved_fallback(results),
         )
 
@@ -199,7 +200,7 @@ Final support response:
                 "You are a helpful customer support agent. "
                 "Answer only using the provided support information."
             ),
-            max_completion_tokens=500,
+            max_completion_tokens=1024,
             fallback_response="\n".join(fallback_answers),
         )
 
@@ -211,29 +212,32 @@ Final support response:
         fallback_response=None,
     ):
         try:
-            response = self.client.models.generate_content(
-                model=MODEL_NAME,
-                contents=f"{system_message}\n\n{prompt}",
-                config={
-                    "temperature": 0.2,
-                    "max_output_tokens": max_completion_tokens,
-                },
-            )
-
-            answer = response.text
-
-            if not answer:
-                return "Sorry, I was unable to generate a response."
-
-            return answer.strip()
-
+            for attempt in range(2):
+                response = self.client.models.generate_content(
+                    model=MODEL_NAME,
+                    contents=f"{system_message}\n\n{prompt}",
+                    config=types.GenerateContentConfig(
+                        temperature=0.2,
+                        max_output_tokens=max_completion_tokens * (2 ** attempt),
+                        # Gemini 2.5 Flash counts thinking against the output cap.
+                        thinking_config=types.ThinkingConfig(thinking_budget=0),
+                    ),
+                )
+                candidates = response.candidates or []
+                finish_reason = candidates[0].finish_reason if candidates else None
+                if finish_reason == types.FinishReason.MAX_TOKENS:
+                    print("Gemini reached its output limit; discarding partial answer.", flush=True)
+                    continue
+                if finish_reason != types.FinishReason.STOP:
+                    break
+                answer = (response.text or "").strip()
+                if answer:
+                    return answer
+                break
         except Exception as e:
             print("\nGemini error:", e)
 
-            if fallback_response:
-                return fallback_response
-
-            return "Sorry, I am currently unable to process your request."
+        return fallback_response or "Sorry, I am currently unable to process your request."
 
     def _format_examples(self, results, prefix=""):
         examples = []
